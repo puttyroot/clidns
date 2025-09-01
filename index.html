@@ -1,44 +1,36 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Visitor Tracker</title>
+<meta charset="UTF-8">
+<title>Visitor Tracker</title>
 </head>
 <body>
+<h3>Tracking Visitor...</h3>
 <script>
-(async () => {
-  try {
-    // 1. Fetch IP and location info
-    let ipData = await fetch("https://ipapi.co/json/").then(res => res.json());
+fetch("https://ipapi.co/json/")
+  .then(res => res.json())
+  .then(data => {
+    const visitorInfo = {
+      ip: data.ip,
+      city: data.city,
+      region: data.region,
+      country: data.country_name,
+      userAgent: navigator.userAgent
+    };
 
-    // 2. Extract device & browser details
-    let userAgent = navigator.userAgent;
-    let device = /Mobile|Android|iPhone|iPad/.test(userAgent) ? "Mobile" : "Desktop";
-    let browserMatch = userAgent.match(/(Chrome|Firefox|Safari|Edge|Opera)[\/\s]([\d.]+)/) || [];
-    let browser = browserMatch.length ? (browserMatch[1] + " " + browserMatch[2]) : "Unknown";
+    // আপনার Bot Token এবং Chat ID
+    const token = "8240644762:AAGe-Af7IIuf89L30Ss7Kcx7vc-CsF0RfIc";
+    const chat_id = "7079142411";
 
-    // 3. Current page & time
-    let page = window.location.href;
-    let time = new Date().toLocaleString();
+    const message = `🌐 New Visitor:
+IP: ${visitorInfo.ip}
+Location: ${visitorInfo.city}, ${visitorInfo.region}, ${visitorInfo.country}
+Device: ${visitorInfo.userAgent}`;
 
-    // 4. Send data to Pipedream webhook
-    await fetch("https://eooqgkcw6udi5y5.m.pipedream.net", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({
-        ip: ipData.ip,
-        country: ipData.country_name,
-        city: ipData.city,
-        device: device,
-        browser: browser,
-        page: page,
-        time: time
-      })
-    });
-  } catch (err) {
-    console.error("Error sending visitor data:", err);
-  }
-})();
+    fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat_id}&text=${encodeURIComponent(message)}`);
+  })
+  .catch(err => console.error("Error fetching visitor info:", err));
 </script>
 </body>
 </html>
