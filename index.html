@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Visitor Tracker</title>
+</head>
+<body>
+<script>
+(async () => {
+  try {
+    // 1. Fetch IP and location info
+    let ipData = await fetch("https://ipapi.co/json/").then(res => res.json());
+
+    // 2. Extract device & browser details
+    let userAgent = navigator.userAgent;
+    let device = /Mobile|Android|iPhone|iPad/.test(userAgent) ? "Mobile" : "Desktop";
+    let browserMatch = userAgent.match(/(Chrome|Firefox|Safari|Edge|Opera)[\/\s]([\d.]+)/) || [];
+    let browser = browserMatch.length ? (browserMatch[1] + " " + browserMatch[2]) : "Unknown";
+
+    // 3. Current page & time
+    let page = window.location.href;
+    let time = new Date().toLocaleString();
+
+    // 4. Send data to Pipedream webhook
+    await fetch("https://eooqgkcw6udi5y5.m.pipedream.net", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        ip: ipData.ip,
+        country: ipData.country_name,
+        city: ipData.city,
+        device: device,
+        browser: browser,
+        page: page,
+        time: time
+      })
+    });
+  } catch (err) {
+    console.error("Error sending visitor data:", err);
+  }
+})();
+</script>
+</body>
+</html>
